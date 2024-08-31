@@ -1,0 +1,12 @@
+name: NFL_Tendency_Analysis
+title: NFL_Tendency_Analysis
+username: cbinnsanalytics
+account: cbinnsanalytics
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8228138
+bundleId: 8227237
+url: https://cbinnsanalytics.shinyapps.io/NFL_Tendency_Analysis/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
