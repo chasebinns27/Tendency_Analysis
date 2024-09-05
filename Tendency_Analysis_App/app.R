@@ -12,6 +12,8 @@ library(gt)
 library(gtExtras)
 library(ggthemes)
 library(shinybusy)
+library(bslib)
+library(thematic)
 
 #bring in some data initially
 sample_data <- nflfastR::load_pbp(2023)
@@ -24,94 +26,54 @@ teams <- sample_data %>%
 
 rm(sample_data)
 
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   tags$head(
-    # Note the wrapping of the string in HTML()
-    tags$style(HTML("
-      @import url('https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@700&display=swap');
-      h2 {
-        font-family: 'Chivo Mono', monospace;
-      }
-      .siderbar h2 {
-        font-family: 'Chivo Mono', monospace;
-      }"))
+    tags$link(href = "https://fonts.googleapis.com/css2?family=News+Cycle:wght@400;700&display=swap", rel = "stylesheet")
   ),
-
-    # Application title
-    titlePanel("NFL Tendency Analysis"),
-    
-    br(),
+  theme = bslib::bs_theme(bootswatch = 'journal', primary = "#007bff"),
   
-    uiOutput('team_image'),
-    
-    br(),
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-          numericInput('season',
-                      'Enter season',
-                      2023, min = 2016, max = 2023, step = 1),
-          selectInput("team",
-                      "Select offensive team",
-                      c('',teams)),
-          selectInput("down",
-                      "Select down",
-                      c('All','1','2','3','4')),
-          sliderInput("distance",
-                      "Yards to First Down",
-                      min = 0,
-                      max = 40,
-                      value = c(0,10),
-                      ticks = TRUE),
-          sliderInput("field_location",
-                      "Yards to Goal Line",
-                      min = 0,
-                      max = 100,
-                      value = c(0,100),
-                      ticks = TRUE),
-          sliderInput("time",
-                      "Minutes remaining in regulation",
-                      min = 0,
-                      max = 60,
-                      value = c(0, 60),
-                      ticks = TRUE),
-          sliderInput("win_prob",
-                      "Select win probability",
-                      min = 0,
-                      max = 100,
-                      value = c(0,100),
-                      ticks = TRUE),
-          selectInput('overtime',
-                      'Include overtime data?',
-                      c('No', 'Yes')),
-          selectInput("shotgun",
-                      "Select QB Pre-Snap Position",
-                      c('All', 'Shotgun', 'Under Center')),
-          actionButton("goButton","View")
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-          # fluidRow(
-          #   # column(2, uiOutput('team_image')),
-          #   #column(6, img(src = "https://upload.wikimedia.org/wikipedia/en/thumb/7/72/Arizona_Cardinals_logo.svg/179px-Arizona_Cardinals_logo.svg.png", width = 100, height = 100)),
-          # 
-          #   # column(5, img(src = "https://www.freepnglogos.com/uploads/nfl-logo-png-0.png", width = 100, height = 100))
-          # ),
-          verbatimTextOutput("metrics_info"),
-          gt_output("play_counts"),
-          # fluidRow(
-          #   column(7,gt_output("play_counts")),
-          #   column(5, gt_output("league_counts"))),
-          gt_output("all_tendencies"),
-          #gt_output("rushing_data"),
-          br(),
-          shiny::plotOutput("plot")
-        )
+  # Application title
+  br(),
+  titlePanel("NFL Tendency Analysis"),
+  br(),
+  
+  uiOutput('team_image'),
+  br(),
+  
+  # Sidebar with input controls
+  sidebarLayout(
+    sidebarPanel(
+      numericInput('season', 'Enter season', 2023, min = 2016, max = 2023, step = 1),
+      selectInput("team", "Select offensive team", c('', teams)),
+      selectInput("down", "Select down", c('All', '1', '2', '3', '4')),
+      sliderInput("distance", "Yards to First Down", min = 0, max = 40, value = c(0, 10), ticks = TRUE),
+      sliderInput("field_location", "Yards to Goal Line", min = 0, max = 100, value = c(0, 100), ticks = TRUE),
+      sliderInput("time", "Minutes remaining in regulation", min = 0, max = 60, value = c(0, 60), ticks = TRUE),
+      sliderInput("win_prob", "Select win probability", min = 0, max = 100, value = c(0, 100), ticks = TRUE),
+      selectInput('overtime', 'Include overtime data?', c('No', 'Yes')),
+      selectInput("shotgun", "Select QB Pre-Snap Position", c('All', 'Shotgun', 'Under Center')),
+      actionButton("goButton", "View")
     ),
+    
+    # Tabs layout for displaying content
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Tables",
+                 verbatimTextOutput("metrics_info"),
+                 gt_output("play_counts"),
+                 gt_output("all_tendencies")
+        ),
+        tabPanel("Plot",
+                 plotOutput("plot")
+        )
+      )
+    )
+  ),
   add_busy_spinner(spin = "fading-circle")
 )
+
 
 # Define server logic
 server <- function(input, output) {
@@ -216,7 +178,7 @@ server <- function(input, output) {
                ggtitle("Performance Over the Course of the Season") +
                labs(x = "Week of the Season",
                     y = "EPA Per Play") +
-               theme_minimal() +
+               theme_minimal(base_family = "news_cycle") +
                theme(
                  plot.title = element_text(face = "bold", size = 20),  # Make title bold and big
                  axis.title = element_text(face = "bold", size = 14) , # Make axis titles bold
