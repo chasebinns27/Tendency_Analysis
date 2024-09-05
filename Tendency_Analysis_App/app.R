@@ -60,12 +60,12 @@ ui <- fluidPage(
     # Tabs layout for displaying content
     mainPanel(
       tabsetPanel(
-        tabPanel("Tables",
+        tabPanel("Tabular Data",
                  verbatimTextOutput("metrics_info"),
                  gt_output("play_counts"),
                  gt_output("all_tendencies")
         ),
-        tabPanel("Plot",
+        tabPanel("Trends",
                  plotOutput("plot")
         )
       )
