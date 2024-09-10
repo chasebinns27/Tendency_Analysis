@@ -45,7 +45,7 @@ ui <- fluidPage(
   # Sidebar with input controls
   sidebarLayout(
     sidebarPanel(
-      numericInput('season', 'Enter season', 2023, min = 2016, max = 2023, step = 1),
+      numericInput('season', 'Enter season', 2024, min = 2016, max = 2024, step = 1),
       selectInput("team", "Select offensive team", c('', teams)),
       selectInput("down", "Select down", c('All', '1', '2', '3', '4')),
       sliderInput("distance", "Yards to First Down", min = 0, max = 40, value = c(0, 10), ticks = TRUE),
