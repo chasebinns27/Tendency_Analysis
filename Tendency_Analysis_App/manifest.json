@@ -2460,6 +2460,61 @@
         "Built": "R 4.3.2; ; 2023-12-17 04:18:24 UTC; windows"
       }
     },
+    "showtext": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "showtext",
+        "Type": "Package",
+        "Title": "Using Fonts More Easily in R Graphs",
+        "Version": "0.9-7",
+        "Date": "2024-03-02",
+        "Author": "Yixuan Qiu and authors/contributors of the\n    included software. See file AUTHORS for details.",
+        "Maintainer": "Yixuan Qiu <yixuan.qiu@cos.name>",
+        "Description": "Making it easy to use various types of fonts ('TrueType',\n    'OpenType', Type 1, web fonts, etc.) in R graphs, and supporting most output\n    formats of R graphics including PNG, PDF and SVG. Text glyphs will be converted\n    into polygons or raster images, hence after the plot has been created, it no\n    longer relies on the font files. No external software such as 'Ghostscript' is\n    needed to use this package.",
+        "Depends": "sysfonts (>= 0.7.1), showtextdb (>= 2.0)",
+        "Imports": "grDevices",
+        "Suggests": "knitr, rmarkdown, prettydoc, curl, jsonlite",
+        "SystemRequirements": "zlib, libpng, FreeType",
+        "URL": "https://github.com/yixuan/showtext",
+        "BugReports": "https://github.com/yixuan/showtext/issues",
+        "License": "Apache License (>= 2.0)",
+        "Copyright": "see file COPYRIGHTS",
+        "VignetteBuilder": "knitr, rmarkdown",
+        "RoxygenNote": "7.3.1",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-03-02 02:17:21 UTC; qyx",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-03-02 06:20:02 UTC",
+        "Built": "R 4.3.3; x86_64-w64-mingw32; 2024-09-04 01:41:53 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "showtextdb": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "showtextdb",
+        "Type": "Package",
+        "Title": "Font Files for the 'showtext' Package",
+        "Version": "3.0",
+        "Date": "2020-05-31",
+        "Author": "Yixuan Qiu and authors/contributors of the included fonts. See file\n    AUTHORS for details.",
+        "Maintainer": "Yixuan Qiu <yixuan.qiu@cos.name>",
+        "Description": "Providing font files that can be used by the 'showtext' package.",
+        "Imports": "sysfonts (>= 0.7), utils",
+        "Suggests": "curl",
+        "License": "Apache License (>= 2.0)",
+        "Copyright": "see file COPYRIGHTS",
+        "RoxygenNote": "7.1.0",
+        "NeedsCompilation": "no",
+        "Packaged": "2020-06-04 04:05:01 UTC; qyx",
+        "Repository": "CRAN",
+        "Date/Publication": "2020-06-04 08:10:02 UTC",
+        "Built": "R 4.3.3; ; 2024-09-04 01:15:33 UTC; windows"
+      }
+    },
     "snakecase": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3041,7 +3096,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "56013efd5355ce6a7a7ab7cdaef99ca4"
+      "checksum": "8f67ea22b6e754c59788ea7d3a4b09fe"
     }
   },
   "users": null
