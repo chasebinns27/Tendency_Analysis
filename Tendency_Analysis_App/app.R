@@ -14,6 +14,7 @@ library(ggthemes)
 library(shinybusy)
 library(bslib)
 library(thematic)
+library(sysfonts)
 
 # Load the News Cycle font from Google Fonts
 font_add_google("News Cycle", "news_cycle")
