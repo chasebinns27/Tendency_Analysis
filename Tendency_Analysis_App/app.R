@@ -172,19 +172,35 @@ server <- function(input, output) {
       
       return(ggplot(filtered_data_pull() %>%
                       group_by(week, play_type) %>%
-                      summarize(average_epa = mean(epa)),aes(x = week, y = average_epa, fill = play_type, color = play_type)) + geom_point() + 
+                      summarize(average_epa = mean(epa)),
+                    aes(x = factor(week), y = average_epa)) +
+               
+               # Create bars for each play_type per week
+               geom_bar(aes(fill = play_type), stat = "identity", position = "dodge", alpha = 0.7) +
+               
+               # Adjust color and fill scales
                scale_color_manual(values = custom_colors) +
-               scale_x_continuous(breaks = filtered_data_pull()$week) + geom_smooth(se = FALSE) +
+               scale_fill_manual(values = custom_colors) +
+               
+               # Switch to scale_x_discrete since 'week' is a factor
+               scale_x_discrete(breaks = unique(filtered_data_pull()$week)) +
+               
+               # Labels and titles
                ggtitle("Performance Over the Course of the Season") +
                labs(x = "Week of the Season",
                     y = "EPA Per Play") +
+               
+               # Adjust theme elements
                theme_minimal(base_family = "news_cycle") +
                theme(
-                 plot.title = element_text(face = "bold", size = 20),  # Make title bold and big
-                 axis.title = element_text(face = "bold", size = 14) , # Make axis titles bold
-                 axis.text.x = element_text(size = 12),  # Adjust the size as needed
-                 axis.text.y = element_text(size = 12) 
-               ))
+                 plot.title = element_text(face = "bold", size = 20),
+                 axis.title = element_text(face = "bold", size = 14),
+                 axis.text.x = element_text(size = 12),
+                 axis.text.y = element_text(size = 12)
+               )
+             
+             
+      )
     })
     
     
