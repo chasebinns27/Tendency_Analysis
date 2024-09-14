@@ -14,11 +14,9 @@ library(ggthemes)
 library(shinybusy)
 library(bslib)
 library(thematic)
-library(showtext)
 
 # Load the News Cycle font from Google Fonts
 font_add_google("News Cycle", "news_cycle")
-showtext_auto()
 
 #bring in some data initially
 sample_data <- nflfastR::load_pbp(2023)
