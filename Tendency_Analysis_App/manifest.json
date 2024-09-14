@@ -2573,6 +2573,34 @@
         "Built": "R 4.3.1; ; 2023-10-24 02:04:57 UTC; windows"
       }
     },
+    "sysfonts": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "sysfonts",
+        "Type": "Package",
+        "Title": "Loading Fonts into R",
+        "Version": "0.8.9",
+        "Date": "2024-03-02",
+        "Author": "Yixuan Qiu and authors/contributors of the\n    included fonts. See file AUTHORS for details.",
+        "Maintainer": "Yixuan Qiu <yixuan.qiu@cos.name>",
+        "Description": "Loading system fonts and Google Fonts\n    <https://fonts.google.com/> into R, in order to\n    support other packages such as 'R2SWF' and 'showtext'.",
+        "Suggests": "curl, jsonlite",
+        "Copyright": "see file COPYRIGHTS",
+        "SystemRequirements": "zlib, libpng, FreeType",
+        "URL": "https://github.com/yixuan/sysfonts",
+        "BugReports": "https://github.com/yixuan/sysfonts/issues",
+        "License": "GPL-2",
+        "RoxygenNote": "7.3.1",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-03-02 01:48:02 UTC; qyx",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-03-02 03:40:02 UTC",
+        "Built": "R 4.3.3; x86_64-w64-mingw32; 2024-09-04 00:38:03 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "thematic": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3013,7 +3041,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "63a2d841d7ce0f6c2772975c5a8be429"
+      "checksum": "56013efd5355ce6a7a7ab7cdaef99ca4"
     }
   },
   "users": null
