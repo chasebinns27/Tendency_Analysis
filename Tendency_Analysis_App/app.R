@@ -250,86 +250,105 @@ server <- function(input, output) {
     
     output$play_counts <- render_gt({
       tryCatch({
-        return(filtered_data_pull() %>%
-                 mutate(success = ifelse(epa > 0, 1, 0)) %>%
-                 group_by(posteam) %>%
-                 mutate(total_plays = n_distinct(play_id, old_game_id)) %>%
-                 ungroup() %>%
-                 group_by(play_type) %>%
-                 mutate(play_count = n_distinct(play_id, old_game_id),
-                        avg_epa = round(mean(epa), 2),
-                        success_rate = round(mean(success) * 100, 2)) %>%
-                 mutate(pct = round((play_count / total_plays) * 100, 2)) %>%
-                 distinct(play_type, play_count, team_pct = pct, team_avg_epa = avg_epa, team_success_rate = success_rate) %>%
-                 #left_join(league_data_pull(), by = 'play_type') %>%
-                 # mutate(pct_difference = round((team_pct - pct), 2),
-                 #        epa_difference = round((team_avg_epa - avg_epa), 2),
-                 #        success_rate_difference = round((team_success_rate - success_rate), 2)) %>%
-                 mutate(epa_percentile = round(case_when(play_type == 'run' ~ ecdf(league_data_pull() %>% 
-                                                     filter(play_type == 'run') %>%
-                                                     pull(avg_epa))(team_avg_epa) * 100,
-                                                   
-                                                   play_type == 'pass' ~ ecdf(league_data_pull() %>% 
-                                                                                filter(play_type == 'pass') %>%
-                                                                                pull(avg_epa))(team_avg_epa) * 100), digits = 2),
-                        
-                        sr_percentile = round(case_when(play_type == 'run' ~ ecdf(league_data_pull() %>% 
-                                                                              filter(play_type == 'run') %>%
-                                                                              pull(success_rate))(team_success_rate) * 100,
-                                                  play_type == 'pass' ~ ecdf(league_data_pull() %>% 
-                                                                               filter(play_type == 'pass') %>%
-                                                                               pull(success_rate))(team_success_rate) * 100), digits = 2)) %>%
-
-                 select(`Play Type` = play_type, `Play Count` = play_count, `Play Type Percentages` = team_pct,
-                        `Average EPA` = team_avg_epa, `EPA League Percentile` = epa_percentile, `Success Rate` = team_success_rate, 
-                        `Success Rate League Percentile` = sr_percentile) %>%
-                 ungroup() %>%
-                 arrange(`Play Type`) %>%
-                 gt() %>%
-                 gt_theme_538() %>%
-                 tab_header(title = 'Team Summary') %>%
-                 
-                 # Apply color for 'pass' rows
-                 data_color(
-                   columns = `EPA League Percentile`,
-                   rows = `Play Type` == "pass",
-                   fn = scales::col_numeric(
-                     palette = c("red", "white", "green"),
-                     domain = c(0, 100)
-                   )
-                 ) %>%
-                 data_color(
-                   columns = `Success Rate League Percentile`,
-                   rows = `Play Type` == "pass",
-                   fn = scales::col_numeric(
-                     palette = c("red", "white", "green"),
-                     domain = c(0,100)
-                   )
-                 ) %>%
-                 
-                 # Apply a different color for 'run' rows
-                 data_color(
-                   columns = `EPA League Percentile`,
-                   rows = `Play Type` == "run",
-                   fn = scales::col_numeric(
-                     palette = c("red", "white", "green"),
-                     domain = c(0, 100)
-                   )
-                 ) %>%
-                 data_color(
-                   columns = `Success Rate League Percentile`,
-                   rows = `Play Type` == "run",
-                   fn = scales::col_numeric(
-                     palette = c("red", "white", "green"),
-                     domain = c(0, 100)
-                   )
-                 )
-        )}, 
+        # Pull and prepare the data
+        filtered_data <- filtered_data_pull() %>%
+          mutate(success = ifelse(epa > 0, 1, 0)) %>%
+          group_by(posteam) %>%
+          mutate(total_plays = n_distinct(play_id, old_game_id)) %>%
+          ungroup() %>%
+          group_by(play_type) %>%
+          mutate(play_count = n_distinct(play_id, old_game_id),
+                 avg_epa = round(mean(epa), 2),
+                 success_rate = round(mean(success) * 100, 2)) %>%
+          mutate(pct = round((play_count / total_plays) * 100, 2)) %>%
+          distinct(play_type, play_count, team_pct = pct, team_avg_epa = avg_epa, team_success_rate = success_rate) %>%
+          ungroup()
         
-        error = function(e) {#return("Try new filters. The current filters do not produce enough data.")
-                                return(NULL)  # Return NULL to prevent the output from being rendered
-                              })
+        # Check if "run" and "pass" play types exist
+        run_exists <- "run" %in% filtered_data$play_type
+        pass_exists <- "pass" %in% filtered_data$play_type
+        
+        # Calculate percentiles only for available play types
+        filtered_data <- filtered_data %>%
+          mutate(epa_percentile = case_when(
+            play_type == 'run' ~ round(ecdf(league_data_pull() %>%
+                                              filter(play_type == 'run') %>%
+                                              pull(avg_epa))(team_avg_epa) * 100, 2),
+            play_type == 'pass' ~ round(ecdf(league_data_pull() %>%
+                                               filter(play_type == 'pass') %>%
+                                               pull(avg_epa))(team_avg_epa) * 100, 2),
+            TRUE ~ NA_real_
+          ),
+          sr_percentile = case_when(
+            play_type == 'run' ~ round(ecdf(league_data_pull() %>%
+                                              filter(play_type == 'run') %>%
+                                              pull(success_rate))(team_success_rate) * 100, 2),
+            play_type == 'pass' ~ round(ecdf(league_data_pull() %>%
+                                               filter(play_type == 'pass') %>%
+                                               pull(success_rate))(team_success_rate) * 100, 2),
+            TRUE ~ NA_real_
+          ))
+        
+        # Generate the gt table with 'Play Type' as a column
+        gt_table <- filtered_data %>%
+          select(`Play Type` = play_type, `Play Count` = play_count, `Play Type Percentages` = team_pct,
+                 `Average EPA` = team_avg_epa, `EPA League Percentile` = epa_percentile, `Success Rate` = team_success_rate, 
+                 `Success Rate League Percentile` = sr_percentile) %>%
+          arrange(`Play Type`) %>%  # Ensure Play Type is properly ordered
+          gt() %>%
+          gt_theme_538() %>%
+          tab_header(title = 'Team Summary')
+        
+        # Conditionally apply data_color based on the existence of 'pass' plays
+        if (pass_exists) {
+          gt_table <- gt_table %>%
+            data_color(
+              columns = `EPA League Percentile`,
+              rows = `Play Type` == "pass",
+              fn = scales::col_numeric(
+                palette = c("red", "white", "green"),
+                domain = c(0, 100)
+              )
+            ) %>%
+            data_color(
+              columns = `Success Rate League Percentile`,
+              rows = `Play Type` == "pass",
+              fn = scales::col_numeric(
+                palette = c("red", "white", "green"),
+                domain = c(0, 100)
+              )
+            )
+        }
+        
+        # Conditionally apply data_color based on the existence of 'run' plays
+        if (run_exists) {
+          gt_table <- gt_table %>%
+            data_color(
+              columns = `EPA League Percentile`,
+              rows = `Play Type` == "run",
+              fn = scales::col_numeric(
+                palette = c("red", "white", "green"),
+                domain = c(0, 100)
+              )
+            ) %>%
+            data_color(
+              columns = `Success Rate League Percentile`,
+              rows = `Play Type` == "run",
+              fn = scales::col_numeric(
+                palette = c("red", "white", "green"),
+                domain = c(0, 100)
+              )
+            )
+        }
+        
+        # Return the gt table
+        return(gt_table)
+        
+      }, error = function(e) {
+        # Return NULL to avoid crashing the app
+        return(NULL)
       })
+    })
     
 
   
