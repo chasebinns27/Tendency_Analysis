@@ -146,12 +146,12 @@ server <- function(input, output) {
              success_rate = mean(success)) %>%
       mutate(pct = play_count/total_plays) %>%
       distinct(posteam, play_type,play_count, pct, avg_epa, success_rate) %>%
-      group_by(play_type) %>%
+      group_by(play_type, posteam) %>%
       summarize(pct = round(mean(pct) * 100,2),
-                max_epa = round(max(avg_epa),2),
-                min_epa = round(min(avg_epa),2),
-                max_success_rate = round(max(success_rate) * 100, 2),
-                min_success_rate = round(min(success_rate) * 100, 2),
+                # max_epa = round(max(avg_epa),2),
+                # min_epa = round(min(avg_epa),2),
+                # max_success_rate = round(max(success_rate) * 100, 2),
+                # min_success_rate = round(min(success_rate) * 100, 2),
                 avg_epa = round(mean(avg_epa),2),
                 success_rate = round(mean(success_rate) * 100, 2)
                )
@@ -261,13 +261,28 @@ server <- function(input, output) {
                         success_rate = round(mean(success) * 100, 2)) %>%
                  mutate(pct = round((play_count / total_plays) * 100, 2)) %>%
                  distinct(play_type, play_count, team_pct = pct, team_avg_epa = avg_epa, team_success_rate = success_rate) %>%
-                 left_join(league_data_pull(), by = 'play_type') %>%
-                 mutate(pct_difference = round((team_pct - pct), 2),
-                        epa_difference = round((team_avg_epa - avg_epa), 2),
-                        success_rate_difference = round((team_success_rate - success_rate), 2)) %>%
+                 #left_join(league_data_pull(), by = 'play_type') %>%
+                 # mutate(pct_difference = round((team_pct - pct), 2),
+                 #        epa_difference = round((team_avg_epa - avg_epa), 2),
+                 #        success_rate_difference = round((team_success_rate - success_rate), 2)) %>%
+                 mutate(epa_percentile = round(case_when(play_type == 'run' ~ ecdf(league_data_pull() %>% 
+                                                     filter(play_type == 'run') %>%
+                                                     pull(avg_epa))(team_avg_epa) * 100,
+                                                   
+                                                   play_type == 'pass' ~ ecdf(league_data_pull() %>% 
+                                                                                filter(play_type == 'pass') %>%
+                                                                                pull(avg_epa))(team_avg_epa) * 100), digits = 2),
+                        
+                        sr_percentile = round(case_when(play_type == 'run' ~ ecdf(league_data_pull() %>% 
+                                                                              filter(play_type == 'run') %>%
+                                                                              pull(success_rate))(team_success_rate) * 100,
+                                                  play_type == 'pass' ~ ecdf(league_data_pull() %>% 
+                                                                               filter(play_type == 'pass') %>%
+                                                                               pull(success_rate))(team_success_rate) * 100), digits = 2)) %>%
+
                  select(`Play Type` = play_type, `Play Count` = play_count, `Play Type Percentages` = team_pct,
-                        `Average EPA` = team_avg_epa, `EPA Difference From League` = epa_difference, `Success Rate` = team_success_rate, 
-                        `Success Rate Difference From League` = success_rate_difference) %>%
+                        `Average EPA` = team_avg_epa, `EPA League Percentile` = epa_percentile, `Success Rate` = team_success_rate, 
+                        `Success Rate League Percentile` = sr_percentile) %>%
                  ungroup() %>%
                  arrange(`Play Type`) %>%
                  gt() %>%
@@ -276,37 +291,37 @@ server <- function(input, output) {
                  
                  # Apply color for 'pass' rows
                  data_color(
-                   columns = `Average EPA`,
+                   columns = `EPA League Percentile`,
                    rows = `Play Type` == "pass",
                    fn = scales::col_numeric(
                      palette = c("red", "white", "green"),
-                     domain = c(min_pass_epa(), max_pass_epa())
+                     domain = c(0, 100)
                    )
                  ) %>%
                  data_color(
-                   columns = `Success Rate`,
+                   columns = `Success Rate League Percentile`,
                    rows = `Play Type` == "pass",
                    fn = scales::col_numeric(
                      palette = c("red", "white", "green"),
-                     domain = c(min_pass_sr(), max_pass_sr())
+                     domain = c(0,100)
                    )
                  ) %>%
                  
                  # Apply a different color for 'run' rows
                  data_color(
-                   columns = `Average EPA`,
+                   columns = `EPA League Percentile`,
                    rows = `Play Type` == "run",
                    fn = scales::col_numeric(
                      palette = c("red", "white", "green"),
-                     domain = c(min_rush_epa(), max_rush_epa())
+                     domain = c(0, 100)
                    )
                  ) %>%
                  data_color(
-                   columns = `Success Rate`,
+                   columns = `Success Rate League Percentile`,
                    rows = `Play Type` == "run",
                    fn = scales::col_numeric(
                      palette = c("red", "white", "green"),
-                     domain = c(min_rush_sr(), max_rush_sr())
+                     domain = c(0, 100)
                    )
                  )
         )}, 
@@ -316,66 +331,7 @@ server <- function(input, output) {
                               })
       })
     
-    # output$league_counts <- render_gt({
-    #   return(league_data_pull()  %>%
-    #            arrange(play_type) %>%
-    #            gt() %>%
-    #            gt_theme_538() %>%
-    #            tab_header(title = 'League Summary'))
-    # })
-  
-  
-  # output$rushing_data <- render_gt({
-  #   return(filtered_data_pull() %>%
-  #            group_by(posteam) %>%
-  #            mutate(total_plays = n_distinct(play_id, old_game_id)) %>%
-  #            filter(rush == 1) %>%
-  #            ungroup() %>%
-  #            mutate(shotgun = ifelse(shotgun == 1, 'Yes', 'No')) %>%
-  #            group_by(shotgun, run_location, run_gap) %>%
-  #            mutate(play_count = n_distinct(play_id, old_game_id),
-  #                   avg_epa = round(mean(epa),2)) %>%
-  #            mutate(pct = round((play_count/total_plays)*100,2)) %>%
-  #            distinct(pct, avg_epa) %>%
-  #            ungroup() %>%
-  #            mutate(run_gap = ifelse(run_location == 'middle', 'center', run_gap)) %>%
-  #            distinct(`In Shotgun?` = shotgun, `Run Location` = run_location,
-  #                     `Run Gap` = run_gap, `% of Plays in Scenario` = pct,
-  #                     `Average EPA` = avg_epa) %>%
-  #            arrange(desc(`% of Plays in Scenario`)) %>%
-  #            slice(1:3) %>%
-  #            gt() %>%
-  #            gt_theme_538() %>%
-  #            tab_header(title = 'Rushing Tendencies'))
-  # })
-  # 
-  # output$passing_data <- render_gt({
-  #   return(filtered_data_pull() %>%
-  #            mutate(pass_length = ifelse(sack == 1 & is.na(pass_length) == TRUE, 'sack', pass_length),
-  #                   pass_location = ifelse(sack == 1 & is.na(pass_location) == TRUE, 'sack', pass_location)) %>%
-  #            mutate(
-  #                   pass_length = ifelse(qb_scramble == 1 & is.na(pass_length) == TRUE, 'qb_scramble', pass_length),
-  #                   pass_location = ifelse(qb_scramble == 1 & is.na(pass_location) == TRUE, 'qb_scramble', pass_location)) %>%
-  #            group_by(posteam) %>%
-  #            mutate(total_plays = n_distinct(play_id, old_game_id)) %>%
-  #            filter(pass == 1) %>%
-  #            ungroup() %>%
-  #            mutate(shotgun = ifelse(shotgun == 1, 'Yes', 'No')) %>%
-  #            group_by(shotgun, pass_length, pass_location) %>%
-  #            mutate(play_count = n_distinct(play_id, old_game_id),
-  #                   avg_epa = round(mean(epa),2)) %>%
-  #            mutate(pct = round((play_count/total_plays)*100,2)) %>%
-  #            distinct(pct, avg_epa) %>%
-  #            ungroup() %>%
-  #            distinct(`In Shotgun?` = shotgun, `Pass Length` = pass_length,
-  #                     `Pass Location` = pass_location, `% of Plays in Scenario` = pct,
-  #                     `Average EPA` = avg_epa) %>%
-  #            arrange(desc(`% of Plays in Scenario`)) %>%
-  #            slice(1:3) %>%
-  #            gt() %>%
-  #            gt_theme_538() %>%
-  #            tab_header(title = 'Dropback Tendencies'))
-  # })
+
   
   output$all_tendencies <- render_gt({
     return(filtered_data_pull() %>%
