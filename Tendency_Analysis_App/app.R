@@ -214,36 +214,40 @@ server <- function(input, output) {
       
       custom_colors <- c(passing_color, rushing_color)
       
-      return(ggplot(filtered_data_pull() %>%
-                      group_by(week, play_type) %>%
-                      summarize(average_epa = mean(epa)),
-                    aes(x = factor(week), y = average_epa)) +
-               
-               # Create bars for each play_type per week
-               geom_bar(aes(fill = play_type), stat = "identity", position = "dodge", alpha = 0.7) +
-               
-               # Adjust color and fill scales
-               scale_color_manual(values = custom_colors) +
-               scale_fill_manual(values = custom_colors) +
-               
-               # Switch to scale_x_discrete since 'week' is a factor
-               scale_x_discrete(breaks = unique(filtered_data_pull()$week)) +
-               
-               # Labels and titles
-               ggtitle("Performance Over the Course of the Season") +
-               labs(x = "Week of the Season",
-                    y = "EPA Per Play") +
-               
-               # Adjust theme elements
-               theme_minimal(base_family = "news_cycle") +
-               theme(
-                 plot.title = element_text(face = "bold", size = 20),
-                 axis.title = element_text(face = "bold", size = 14),
-                 axis.text.x = element_text(size = 12),
-                 axis.text.y = element_text(size = 12)
-               )
-             
-             
+      return(
+        ggplot(filtered_data_pull() %>%
+                 group_by(week, play_type) %>%
+                 summarize(average_epa = mean(epa)),
+               aes(x = factor(week), y = average_epa, color = play_type, group = play_type)) +
+          
+          # Create lines for each play_type per week
+          geom_line(size = 1.2) +
+          
+          # Add points for better clarity
+          geom_point(size = 3) +
+          
+          # Adjust color scales
+          scale_color_manual(values = custom_colors) +
+          
+          # Switch to scale_x_discrete since 'week' is a factor
+          scale_x_discrete(breaks = unique(filtered_data_pull()$week)) +
+          
+          # Labels and titles
+          ggtitle("Performance Over the Course of the Season") +
+          labs(x = "Week of the Season",
+               y = "EPA Per Play",
+               color = "Play Type") +
+          
+          # Adjust theme elements
+          theme_minimal(base_family = "news_cycle") +
+          theme(
+            plot.title = element_text(face = "bold", size = 20),
+            axis.title = element_text(face = "bold", size = 14),
+            axis.text.x = element_text(size = 12),
+            axis.text.y = element_text(size = 12),
+            legend.title = element_text(face = "bold", size = 14),
+            legend.text = element_text(size = 12)
+          )
       )
     })
     
